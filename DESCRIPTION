@@ -1,0 +1,23 @@
+Package: insdens
+Type: Package
+Title: Calculate Posterior Probability of Bacterial Gene Essentiality
+Version: 1.1.0
+Author: Kevin Walters
+Maintainer: Kevin Walters <k.walters@sheffield.ac.uk>
+Description: Uses gene-level insertion density and specific priors to calculate 
+    the posterior probability that each gene is essential, for a given set of 
+    bacterial genes provided. Uses Markov chain Monte Carlo to sample values of 
+    the posterior probabilities.    
+License: GPL (>= 2)
+Encoding: UTF-8
+LazyData: true
+Imports: 
+    magrittr,
+    dplyr,
+    plyr,
+    rlang
+RoxygenNote: 7.1.1
+Suggests: 
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr

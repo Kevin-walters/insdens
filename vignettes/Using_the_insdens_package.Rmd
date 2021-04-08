@@ -1,0 +1,130 @@
+---
+title: "Using the insdens package"
+author: "Kevin Walters"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Using the insdens package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>",
+  fig.width = 7, 
+  fig.height = 5
+)
+```
+
+# Data input file
+
+The input file should be a .csv file with exactly two columns. The first column contains the gene names and the second column contains the insertion density. The first column containing the gene names must be called `gene`. The second column containing the insertion densities must be called `insdens`. A file that doesn't have two columns and exactly these column names will cause an error. It should look like this:
+
+![Required format of the input csv file](csv_file_image.png)
+
+The insertion density is simply the number of **unique** insertions divided by the gene length. If there are multiple insertions at a single position then simply remove all but one of these so that the insertion is unique.
+
+
+
+```{r, realdata,include=FALSE}
+# Three csv files containing the insertion densities for E.coli, S.aureus and S.Typhimurium are available with the package at
+
+system.file("extdata", "E_coli_insdens.csv", package = "insdens")
+system.file("extdata", "S_aureus_insdens.csv", package = "insdens")
+system.file("extdata", "S_Typhimurium_insdens.csv", package = "insdens")
+```
+
+# Running the MCMC
+
+## Choosing the length of the burn-in
+
+The idea is to remove the set of samples at the beginning of the MCMC that do not represent samples from the posterior distribution. This is best done by a visual check for each parameter via a trace plot. A trace plot is simply a plot of the parameter values against the iteration. In the following we show the trace plot for the $\theta$ parameter. The burn in is set to zero. The parameter values are the second output list element. The parameter names (in dataframe order) are `alpha_e`, `alpha_n`, `beta_e`, `beta_n` and `theta` and these represent the parameters $\alpha_E$, $\alpha_N$, $\beta_E$, $\beta_N$ and $\theta$.
+
+```{r, include = F}
+devtools::load_all()
+```
+
+```{r without_burnin}
+set.seed(892991)
+insdens_out <- post_prob(
+  file_path = system.file("extdata", "E_coli_insdens.csv", package = "insdens"),
+  insdens_thresh = 0.025,
+  init_theta = 0.09,
+  niter = 300,
+  burn_in = 0,
+  acc_window = 50,
+  print_prop_sd = F,
+  print_it = F,
+  thin = 1)
+plot(insdens_out[[2]]$theta, ylab = expression(theta), xlab = "iteration", pch = 20)
+```
+
+We can see that after a handful of iterations the sampler has settled down. We could be conservative and omit the first 100 iterations. Because this is a random process we cannot be sure how long a burn-in is needed in subsequent runs of the chain. It would make sense to run several short chains to assess the length of the burn-in needed. We next omit the first 100 iterations by specifying the `burn-in` parameter to be 100
+
+```{r with_burnin}
+set.seed(892991)
+insdens_out <- post_prob(
+  file_path = system.file("extdata", "E_coli_insdens.csv", package = "insdens"),
+  insdens_thresh = 0.025,
+  init_theta = 0.09,
+  niter = 300,
+  burn_in = 75,
+  acc_window = 50,
+  print_prop_sd = F,
+  print_it = F,
+  thin = 1)
+plot(insdens_out[[2]]$theta, ylab = expression(theta), xlab = "iteration", pch = 20)
+```
+
+The trace plot shows that the sampler seems to have settled down. It is necessary to check the trace plots for each parameter as the burn-in is likely to be different for each parameter. The final chosen burn-in needs to be large enough that all trace plots show convergence.
+
+## How many iterations to use
+
+Some of the parameters in the model show strong autocorrelation (successive values are highly correlated). It is possible to thin the output using the `thin` parameter. Setting `thin =10` for example will retain every tenth value. The rest will be discarded. This will reduce the autocorrelation but will also throw away 90% of the samples. The current thinking seems to be that it is better (in terms of posterior precision) to have a larger highly autocorrelated sample than a smaller set of almost independent samples. However this is only true if the chain is run for a sufficiently large number of iterations that the posterior distribution is well explored.
+
+We found that thinning by 40 generally reduced the autocorrelation to a very low level. This suggests that the chain should be run for at least 40 times the number of independent samples you would like in the final chain. For example, if you want the equivalent of 1000 independent posterior samples then you should run the chain for 40,000 iterations and keep all 40,000 values (rather than thinning them to retain just 1000). 
+
+## Checking convergence
+
+This is usually done visually via trace plots. This is the trace plot for the $\beta_N$ parameter.
+
+```{r check_conv}
+set.seed(892991)
+mcmc_out <- post_prob(
+  file_path = system.file("extdata", "E_coli_insdens.csv", package = "insdens"),
+  insdens_thresh = 0.025,
+  init_theta = 0.09,
+  niter = 800,
+  burn_in = 250,
+  acc_window = 50,
+  print_prop_sd = F,
+  print_it = F,
+  thin = 1)
+plot(mcmc_out[[2]]$beta_n, ylab = expression(beta[N]), xlab = "iteration", pch = 20)
+```
+When checking visually for convergence we are simply assessing whether the chain represents random samples from some fixed probability distribution, or whether the chain is still exploring different parts of the parameter space. Obvious upwards or downwards movements are an indication that the chain has not yet converged. 
+
+The moderate autocorrelation is clearly visible. If the autocorrelation makes it more difficult to tell visually whether the chain has converged you could try thinning the samples. Make sure you use the un-thinned samples in any analysis though (as described above). The thinning suggested here is simply to help assess convergence. 
+
+# Accessing the posterior probability that each gene is essential
+The posterior probabilities of gene essentiality (PPE) are contained in a data frame. This data frame is the first element of the MCMC output list. The first column of the data frame contains the gene name (`gene`) and the second column contains the PPE (`post_prob`). The PPE is calculated as the proportion of the retained MCMC samples in which the gene is declared essential. It will therefore be between 0 and 1 inclusive.
+
+The seventeenth to twenty sixth rows of the data frame containing these values are shown below. 
+```{r show_ppe}
+mcmc_out[[1]][17:26,]
+```
+The user could set a threshold on the posterior probability of essentiality and declare all genes with a posterior probability exceeding this threshold as essential. Alternatively a Bayesian decision-theoretic approach could be used as discussed in the next section
+
+# Classifying genes using Bayesian decision theory
+
+There are two costs that need to be specified here: the costs of false discovery ($C_A$) and false non-discovery ($C_B$). The Bayesian decision theoretic approach tells us that we should declare gene $i$ as essential if $$\text{PPE}_i > \frac{C_A}{C_A + C_B}= \frac{1}{1+R}$$ where $\text{PPE}_i$ is the posterior probability that gene $i$ is essential and $R= C_B / C_A$. In the MCMC output the gene name is stored in the `gene` variable and the PPE in the  `post_prob` variable. We could implement the Bayesian decision theory approach as follows
+```{r , bayes_choice}
+
+r <- 10 # cb / ca = ratio of false non- discovery to false discovery cost
+ess_genes <- mcmc_out[[1]]$gene[mcmc_out[[1]]$post_prob > 1 / (1 + r)]
+head(ess_genes)
+```
+
+To use this approach the user must specify the value of $R$. $R$ measures how much more costly it is to misclassify an essential gene than to misclassify a non-essential gene. If it is more costly to incorrectly classify essential genes than  non-essential genes then the value of $R$ should be high. For example if $R=4$ then the the cost of incorrectly classifying essential genes is four times the cost of incorrectly classifying non-essential genes. With $R=4$, all genes with a PPE exceeding 1/5 would be classified as essential. AS $R$ decreases the threshold on the PPE increases. For example, with $R=1$ the threshold becomes 1/2.  
