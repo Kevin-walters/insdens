@@ -7,6 +7,8 @@ vignette: >
   %\VignetteIndexEntry{Using the insdens package}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+
+bibliography: refdatabase.bib
 ---
 
 ```{r, include = FALSE}
@@ -22,19 +24,9 @@ knitr::opts_chunk$set(
 
 The input file should be a .csv file with exactly two columns. The first column contains the gene names and the second column contains the insertion density. The first column containing the gene names must be called `gene`. The second column containing the insertion densities must be called `insdens`. A file that doesn't have two columns and exactly these column names will cause an error. It should look like this:
 
-![Required format of the input csv file](csv_file_image.png)
+![Required format of the input csv file. Data are derived from [@goodall2018essential]](csv_file_image.png)
 
 The insertion density is simply the number of **unique** insertions divided by the gene length. If there are multiple insertions at a single position then simply remove all but one of these so that the insertion is unique.
-
-
-
-```{r, realdata,include=FALSE}
-# Three csv files containing the insertion densities for E.coli, S.aureus and S.Typhimurium are available with the package at
-
-system.file("extdata", "E_coli_insdens.csv", package = "insdens")
-system.file("extdata", "S_aureus_insdens.csv", package = "insdens")
-system.file("extdata", "S_Typhimurium_insdens.csv", package = "insdens")
-```
 
 # Running the MCMC
 
@@ -60,6 +52,8 @@ insdens_out <- post_prob(
   thin = 1)
 plot(insdens_out[[2]]$theta, ylab = expression(theta), xlab = "iteration", pch = 20)
 ```
+
+Note that in the code above the specified `file_path` is specific to writing vignettes. When you specify `file_path` in the `post_prob` function you simply put the file_path as the path to your file, for example, `file_path <- "my_data/ecoli.csv"`
 
 We can see that after a handful of iterations the sampler has settled down. We could be conservative and omit the first 100 iterations. Because this is a random process we cannot be sure how long a burn-in is needed in subsequent runs of the chain. It would make sense to run several short chains to assess the length of the burn-in needed. We next omit the first 100 iterations by specifying the `burn-in` parameter to be 100
 
@@ -128,3 +122,6 @@ head(ess_genes)
 ```
 
 To use this approach the user must specify the value of $R$. $R$ measures how much more costly it is to misclassify an essential gene than to misclassify a non-essential gene. If it is more costly to incorrectly classify essential genes than  non-essential genes then the value of $R$ should be high. For example if $R=4$ then the the cost of incorrectly classifying essential genes is four times the cost of incorrectly classifying non-essential genes. With $R=4$, all genes with a PPE exceeding 1/5 would be classified as essential. AS $R$ decreases the threshold on the PPE increases. For example, with $R=1$ the threshold becomes 1/2.  
+
+# References
+

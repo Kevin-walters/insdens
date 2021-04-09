@@ -12,10 +12,12 @@ post_prob(
   burn_in = 1000,
   acc_window = 500,
   ae_sd = 0.25,
-  be_sd = 0.05,
-  an_sd = 0.25,
+  be_sd = 0.3,
+  an_sd = 0.04,
   bn_sd = 0.05,
-  print_prop_sd = T
+  print_prop_sd = T,
+  print_it = T,
+  thin = 1
 )
 }
 \arguments{
@@ -61,6 +63,16 @@ The default value is 0.05.}
 \item{print_prop_sd}{A logical value indicating whether to print the updated proposal
 standard deviations and acceptance rates of each parameter. If TRUE they
 will be printed  every \code{acc_window} iterations.}
+
+\item{print_it}{A logical value indicating whether to print the iteration.
+number every \code{acc_window} iterations. This is helpful for seeing which
+iteration the chain is on. For example, if \code{acc_window = 100} and
+\code{print_it = T} then the iteration number will be printed every 100
+iterations.}
+
+\item{thin}{A positive integer that represents the number of samples between
+the retained samples. For example \code{thin=10} means retain every tenth
+sample. The recommended and default value is 1.}
 }
 \value{
 A list of two elements. The first list element is a data frame in
@@ -72,7 +84,4 @@ A list of two elements. The first list element is a data frame in
 }
 \description{
 Calculate the posterior probability that a gene is essential using MCMC.
-}
-\examples{
-sum(1,10)
 }
