@@ -32,7 +32,7 @@ The insertion density is simply the number of **unique** insertions divided by t
 
 ## Choosing the length of the burn-in
 
-The idea is to remove the set of samples at the beginning of the MCMC that do not represent samples from the posterior distribution. This is best done by a visual check for each parameter via a trace plot. A trace plot is simply a plot of the parameter values against the iteration. In the following we show the trace plot for the $\theta$ parameter. The burn in is set to zero. The parameter values are the second output list element. The parameter names (in dataframe order) are `alpha_e`, `alpha_n`, `beta_e`, `beta_n` and `theta` and these represent the parameters $\alpha_E$, $\alpha_N$, $\beta_E$, $\beta_N$ and $\theta$.
+The idea is to remove the set of samples at the beginning of the MCMC that do not represent samples from the posterior distribution.  A visual check for each parameter can be made via a a trace plot. A trace plot is simply a plot of the parameter values against the iteration. In the following we show the trace plot for the $\theta$ parameter. The burn in is set to zero. 
 
 ```{r, include = F}
 devtools::load_all()
@@ -40,7 +40,7 @@ devtools::load_all()
 
 ```{r without_burnin}
 set.seed(892991)
-insdens_out <- post_prob(
+mcmc_out <- post_prob(
   file_path = system.file("extdata", "E_coli_insdens.csv", package = "insdens"),
   insdens_thresh = 0.025,
   init_theta = 0.09,
@@ -50,10 +50,21 @@ insdens_out <- post_prob(
   print_prop_sd = F,
   print_it = F,
   thin = 1)
-plot(insdens_out[[2]]$theta, ylab = expression(theta), xlab = "iteration", pch = 20)
 ```
 
-Note that in the code above the specified `file_path` is specific to writing vignettes. When you specify `file_path` in the `post_prob` function you simply put the file_path as the path to your file, for example, `file_path <- "my_data/ecoli.csv"`
+Note that in the code above the specified `file_path` is specific to writing vignettes. When you specify `file_path` in the `post_prob` function you simply put the file_path as the path to your file, for example, `file_path <- "my_data/ecoli.csv"
+
+The parameter values are the second output list element. The parameter names (in dataframe order) are `alpha_e`, `alpha_n`, `beta_e`, `beta_n` and `theta` and these represent the parameters $\alpha_E$, $\alpha_N$, $\beta_E$, $\beta_N$ and $\theta$. Below we show the first few parameter values for each parameter. 
+
+```{r head_par_values}
+head(mcmc_out[[2]])
+```
+
+The trace plot can be obtained as follows
+
+```{r}
+plot(mcmc_out[[2]]$theta, ylab = expression(theta), xlab = "iteration", pch = 20)
+```
 
 We can see that after a handful of iterations the sampler has settled down. We could be conservative and omit the first 100 iterations. Because this is a random process we cannot be sure how long a burn-in is needed in subsequent runs of the chain. It would make sense to run several short chains to assess the length of the burn-in needed. We next omit the first 100 iterations by specifying the `burn-in` parameter to be 100
 
@@ -105,10 +116,15 @@ The moderate autocorrelation is clearly visible. If the autocorrelation makes it
 # Accessing the posterior probability that each gene is essential
 The posterior probabilities of gene essentiality (PPE) are contained in a data frame. This data frame is the first element of the MCMC output list. The first column of the data frame contains the gene name (`gene`) and the second column contains the PPE (`post_prob`). The PPE is calculated as the proportion of the retained MCMC samples in which the gene is declared essential. It will therefore be between 0 and 1 inclusive.
 
-The seventeenth to twenty sixth rows of the data frame containing these values are shown below. 
-```{r show_ppe}
+The seventeenth to twenty sixth rows of the data frame containing these values are shown below. Here are the first few rows of the first returned list element
+```{r head_ppe}
+head(mcmc_out[[1]])
+```
+Here we show the PPEs for a different set of genes which don't all have PPEs of zero.
+```{r more_interesting_ppe}
 mcmc_out[[1]][17:26,]
 ```
+
 The user could set a threshold on the posterior probability of essentiality and declare all genes with a posterior probability exceeding this threshold as essential. Alternatively a Bayesian decision-theoretic approach could be used as discussed in the next section
 
 # Classifying genes using Bayesian decision theory
