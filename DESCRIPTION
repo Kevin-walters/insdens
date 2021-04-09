@@ -1,13 +1,17 @@
 Package: insdens
 Type: Package
-Title: Calculate Posterior Probability of Bacterial Gene Essentiality
-Version: 1.1.0
+Title: Calculate Posterior Probability of Gene Essentiality
+Version: 0.0.0.9000
 Author: Kevin Walters
 Maintainer: Kevin Walters <k.walters@sheffield.ac.uk>
-Description: Uses gene-level insertion density and specific priors to calculate 
-    the posterior probability that each gene is essential, for a given set of 
-    bacterial genes provided. Uses Markov chain Monte Carlo to sample values of 
-    the posterior probabilities.    
+Description: The package Uses Bacterial gene-level insertion density and 
+    specific priors to calculate the posterior probability that each gene is 
+    essential, for a given set of bacterial genes provided. It uses Markov 
+    chain Monte Carlo to sample values of the posterior probabilities. The 
+    paper that gives the details of the exact MCMC approach taken is 
+    "Probabilistic Identification of Bacterial Essential Genes via insertion 
+    density using TraDIS Data with Tn5 libraries" by Nlebedim, 
+    Chaudhuri and Walters (2021).    
 License: GPL (>= 2)
 Encoding: UTF-8
 LazyData: true
@@ -15,7 +19,9 @@ Imports:
     magrittr,
     dplyr,
     plyr,
-    rlang
+    rlang,
+    ttutils,
+    devtools
 RoxygenNote: 7.1.1
 Suggests: 
     knitr,
