@@ -7,3 +7,5 @@ To install the package first install the devtools package:
 Then install the insdens package
 `devtools::install_github("Kevin-walters/insdens", build_vignettes = T)`
 Make sure you include the `build_vignettes = T` argument otherwise there will be no vignette in your package.
+
+The paper that gives the details of the exact MCMC approach, priors etc is "Probabilistic Identification of Bacterial Essential Genes via insertion density using TraDIS Data with Tn5 libraries" by Nlebedim, Chaudhuri and Walters (2021).    
