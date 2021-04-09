@@ -129,15 +129,17 @@ The user could set a threshold on the posterior probability of essentiality and 
 
 # Classifying genes using Bayesian decision theory
 
-There are two costs that need to be specified here: the costs of false discovery ($C_A$) and false non-discovery ($C_B$). The Bayesian decision theoretic approach tells us that we should declare gene $i$ as essential if $$\text{PPE}_i > \frac{C_A}{C_A + C_B}= \frac{1}{1+R}$$ where $\text{PPE}_i$ is the posterior probability that gene $i$ is essential and $R= C_B / C_A$. In the MCMC output the gene name is stored in the `gene` variable and the PPE in the  `post_prob` variable. We could implement the Bayesian decision theory approach as follows
+There are two costs that need to be specified here: the costs of false discovery ($C_A$) and false non-discovery ($C_B$). The Bayesian decision theoretic approach tells us that we should declare gene $i$ as essential if $$\text{PPE}_i > \frac{C_A}{C_A + C_B}= \frac{1}{1+Q}$$ where $\text{PPE}_i$ is the posterior probability that gene $i$ is essential and $Q= C_B / C_A$. In the MCMC output the gene name is stored in the `gene` variable and the PPE in the  `post_prob` variable. We could implement the Bayesian decision theory approach as follows
 ```{r , bayes_choice}
 
-r <- 10 # cb / ca = ratio of false non- discovery to false discovery cost
-ess_genes <- mcmc_out[[1]]$gene[mcmc_out[[1]]$post_prob > 1 / (1 + r)]
+Q <- 10 # cb / ca = ratio of false non- discovery to false discovery cost
+ess_genes <- mcmc_out[[1]]$gene[mcmc_out[[1]]$post_prob > 1 / (1 + Q)]
 head(ess_genes)
 ```
 
-To use this approach the user must specify the value of $R$. $R$ measures how much more costly it is to misclassify an essential gene than to misclassify a non-essential gene. If it is more costly to incorrectly classify essential genes than  non-essential genes then the value of $R$ should be high. For example if $R=4$ then the the cost of incorrectly classifying essential genes is four times the cost of incorrectly classifying non-essential genes. With $R=4$, all genes with a PPE exceeding 1/5 would be classified as essential. AS $R$ decreases the threshold on the PPE increases. For example, with $R=1$ the threshold becomes 1/2.  
+To use this approach the user must specify the value of $Q$. $Q$ measures how much more costly it is to misclassify an essential gene than to misclassify a non-essential gene. If it is more costly to incorrectly classify essential genes than  non-essential genes then the value of $Q$ should be high. For example if $Q=4$ then the the cost of incorrectly classifying essential genes is four times the cost of incorrectly classifying non-essential genes. With $Q=4$, all genes with a PPE exceeding 1/5 would be classified as essential. AS $Q$ decreases the threshold on the PPE increases. For example, with $Q=1$ the threshold becomes 1/2.  
+
+We suggest conducting a sensitivity analysis to see how the selected essential gene set changes as the costs of making incorrect decisions vary. Conceptually, the simplest way to do this is to vary the value of $Q$. A user might choose a range of values of $Q$ say $Q_{\text{min}} < Q < Q_{\text{max}}$ and monitor how the set of genes declared essential varies for values of $Q$ in this range.
 
 # References
 
