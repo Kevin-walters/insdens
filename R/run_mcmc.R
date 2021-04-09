@@ -24,28 +24,30 @@
 #' @param ae_sd The proposal standard devation for the \eqn{\alpha_E} parameter.
 #' The default value is 0.25.
 #' @param be_sd The proposal standard devation for the \eqn{\beta_E} parameter.
-#' The default value is 0.40.
+#' The default value is 0.30.
 #' @param an_sd The proposal standard devation for the \eqn{\alpha_N} parameter.
-#' The default value is 0.05.
+#' The default value is 0.04.
 #' @param bn_sd The proposal standard devation for the \eqn{\beta_N} parameter.
 #' The default value is 0.05.
-#' @param print_prop_sd A logical value indicating whether to print the updated proposal
-#'  standard deviations and acceptance rates of each parameter. If TRUE they
-#'  will be printed  every \code{acc_window} iterations.
+#' @param print_prop_sd A logical value indicating whether to print the updated
+#'  proposal standard deviations and acceptance rates of each parameter. If TRUE
+#'  they will be printed  every \code{acc_window} iterations.
 #' @param print_it A logical value indicating whether to print the iteration.
-#' number every \code{acc_window} iterations. This is helpful for seeing which
-#' iteration the chain is on. For example, if \code{acc_window = 100} and
+#'  number every \code{acc_window} iterations. This is helpful for seeing which
+#'  iteration the chain is on. For example, if \code{acc_window = 100} and
 #' \code{print_it = T} then the iteration number will be printed every 100
 #' iterations.
 #' @param thin A positive integer that represents the number of samples between
 #'  the retained samples. For example \code{thin=10} means retain every tenth
 #'  sample. The recommended and default value is 1.
-#' @return A list of two elements. The first list element is a data frame in
+#' @return A list of two elements. The first returned list element is a data frame in
 #'  which the first column gives the gene names and the the second column gives
-#'  the posterior probability that the gene is essential. The second list
+#'  the posterior probability that the gene is essential. The second returned list
 #'  element is a data frame containing the posterior samples of the model
-#'  parameters (including the burn-in). This allows the user to check
-#'  convergence of the MCMC chain.
+#'  parameters (with the burn-in removed). The data frame has
+#'  \code{niter}-\code{burn_in} rows and 5 columns. The 5 columns represent the
+#'  parameters \eqn{\alpha_E}, \eqn{\alpha_N}, \eqn{\beta_E}, \eqn{\beta_N} and
+#'  \eqn{\theta} in that order.
 #' @importFrom ttutils isInteger
 #' @export
 
